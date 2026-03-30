@@ -32,6 +32,10 @@ use Net::Gearman::Blobbed;
 $Net::Gearman::Blobbed::log = $log;
 
 if (DONE) {
+    isa_ok($blobbed, 'Net::Gearman::Blobbed');
+}
+
+if (DONE) {
     ok( eq_array([ Net::Gearman::Blobbed->resolve(12, 23, 34) ],
 		 [ 12, 23, 34 ]), "resolve pass thru");
     throws_ok {

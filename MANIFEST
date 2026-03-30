@@ -5,5 +5,6 @@ MANIFEST			This list of files
 README
 t/manifest.t
 t/01_blobbed.t
+t/02_memcache_live.t
 t/pod-coverage.t
 t/pod.t
