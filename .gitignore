@@ -6,6 +6,9 @@
 *.o
 *.pm.tdy
 *.bs
+*.deb
+*.bak
+Net-Gearman-Blobbed-*
 
 # Devel::Cover
 cover_db/

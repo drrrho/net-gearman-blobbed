@@ -31,11 +31,40 @@ $log->level($warn ? $DEBUG : $ERROR); # one of DEBUG, INFO, WARN, ERROR, FATAL
 use Net::Gearman::Blobbed;
 $Net::Gearman::Blobbed::log = $log;
 
-if (DONE) {
-    isa_ok($blobbed, 'Net::Gearman::Blobbed');
+if (DONE) { # by foot
+    my $blobbed = Net::Gearman::Blobbed->new;
+    isa_ok( $blobbed, 'Net::Gearman::Blobbed' );
+
+    use Net::Gearman::Blobbed::file;
+    use Moose::Util qw(apply_all_roles);
+    apply_all_roles($blobbed, 'Net::Gearman::Blobbed::file');
+    use Moose::Util qw(does_role);
+    ok(does_role($blobbed, 'Net::Gearman::Blobbed::file'), 'file role');
+
+    is( $blobbed->tmpdir, undef, 'tmpdir yet undefined');
+    $blobbed->tmpdir( '/tmp' );
+    is( $blobbed->tmpdir, '/tmp', 'tmpdir defined');
 }
 
-if (DONE) {
+if (DONE) { # abridged
+    my $blobbed = Net::Gearman::Blobbed->new;
+
+    use Net::Gearman::Blobbed::file;
+    Net::Gearman::Blobbed::file->mk_fileable( $blobbed, tmpdir => '/tmp' );
+    isa_ok( $blobbed, 'Net::Gearman::Blobbed' );
+    ok(does_role($blobbed, 'Net::Gearman::Blobbed::file'), 'file role');
+    is( $blobbed->tmpdir, '/tmp', 'tmpdir defined');
+#
+    use Net::Gearman::Blobbed::memcache;
+    Net::Gearman::Blobbed::memcache->mk_memcacheable( $blobbed, memcache => [] );
+    isa_ok( $blobbed, 'Net::Gearman::Blobbed' );
+    ok(does_role($blobbed, 'Net::Gearman::Blobbed::file'),     'file role');
+    ok(does_role($blobbed, 'Net::Gearman::Blobbed::memcache'), 'file role');
+    is( $blobbed->tmpdir,          '/tmp', 'tmpdir defined');
+    isa_ok( $blobbed->memcache, 'Memcached::libmemcached');
+}
+
+if (DONE) { # resolution
     ok( eq_array([ Net::Gearman::Blobbed->resolve(12, 23, 34) ],
 		 [ 12, 23, 34 ]), "resolve pass thru");
     throws_ok {
@@ -52,3 +81,6 @@ if (DONE) {
 }
 
 done_testing;
+
+__END__
+

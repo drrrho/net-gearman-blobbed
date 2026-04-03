@@ -2,9 +2,17 @@ Build.PL
 Changes
 lib/Net/Gearman/Blobbed.pm
 MANIFEST			This list of files
-README
-t/manifest.t
+README.md
 t/01_blobbed.t
 t/02_memcache_live.t
-t/pod-coverage.t
-t/pod.t
+t/03_file_live.t
+t/04_s3_live.t
+t/05_combined_live.t
+lib/Net/Gearman/Blobbed.pm
+lib/Net/Gearman/Blobbed/file.pm
+lib/Net/Gearman/Blobbed/Client.pm
+lib/Net/Gearman/Blobbed/S3.pm
+lib/Net/Gearman/Blobbed/memcache.pm
+lib/Net/Gearman/Blobbed/Worker.pm
+META.yml
+META.json

@@ -70,12 +70,15 @@ around '_resolve' => sub {
     if ($urn =~ q{urn:x-s3:(//(.+?)/)?(.+?)/(.+)}) {
 	my $bucket = $3;
 	my $key    = $4;
+
 	my $s3 = $elf->s3;
 	my $b = $s3->bucket( $bucket );
 
 	my $response = $b->get_key( $key )
-	    or $Net::Gearman::Blobbed::log->logdie( $s3->err . ": " . $s3->errstr );
+	    or $Net::Gearman::Blobbed::log->logdie( "fetching $key from $bucket failed: " );
+#	    or $Net::Gearman::Blobbed::log->logdie( $s3->err . ": " . $s3->errstr );
 	$Net::Gearman::Blobbed::log->debug( "in bucket $bucket got key '$key'" );
+
 	return $response->{value};
 
     } else {
