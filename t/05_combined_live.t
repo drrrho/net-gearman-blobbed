@@ -128,9 +128,14 @@ if (DONE) {
 	    shift @iparams;
 	    is($_, 23, "worker: data") for @iparams;
 
-	    $job->complete( encode_json( [ $worker->unresolve( $cmd, map { $_ => 24 } @args ) ] ) );
-	    exit;
-#	    exit if ($cmd eq 'exit');
+	    if ($cmd eq 'succeed') {
+		$job->complete( encode_json( [ $worker->unresolve( $cmd, map { $_ => 24 } @args ) ] ) );
+	    } elsif ($cmd eq 'fail') {
+		$job->fail( "too bad" );
+	    } else { # exit
+		$job->complete( encode_json( [ $worker->unresolve( $cmd, map { $_ => 24 } @args ) ] ) );
+		exit;
+	    }
 	}
     }
 
@@ -140,13 +145,13 @@ if (DONE) {
     use JSON;
     my $job = $client->submit_job(
 	func      => 'corrections',
-	args      => [ 'whatever', map { $_ => 23 } @params ],
+	args      => [ 'succeed', map { $_ => 23 } @params ],
 	on_data =>   sub {
 	    $log->logdie("gearman sent partial data");
 	},
 	on_done =>   sub {
 	    my @args = @{ decode_json( $_[0] ) };
-	    is (shift @args, 'whatever', "client: first param");
+	    is (shift @args, 'succeed', "client: first param");
 	    is_deeply( \@args, \@params, "client: control urns");
 
 	    my @oparams = $client->resolve( @args );
@@ -162,7 +167,43 @@ if (DONE) {
 	},
 	);
     $job->await;
-    ok(1, "jobs complete");
+    ok(1, "job complete");
+#
+    $job = $client->submit_job(
+	func      => 'corrections',
+	args      => [ 'fail', map { $_ => 23 } @params ],
+	on_data =>   sub {
+	    $log->logdie("gearman sent partial data");
+	},
+	on_done =>   sub {
+	},
+	on_fail => sub {
+	    my ( $msg, $name, $exception ) = @_;
+	    is( $exception, 'too bad', "failed job");
+#	    $log->logdie( "gearman failure: $msg ".
+#			       ( defined $name and $name eq "gearman" and defined $exception
+#				     ? "$exception" : ""  ) );
+	},
+	);
+    $job->await;
+    ok(1, "job failed");
+#
+    $job = $client->submit_job(
+	func      => 'corrections',
+	args      => [ 'exit', map { $_ => 23 } @params ],
+	on_data =>   sub {
+	    $log->logdie("gearman sent partial data");
+	},
+	on_done =>   sub {
+	    ok(1, 'exit returned');
+	},
+	on_fail => sub {
+	    $log->logwarn( "fail????" );
+	},
+	);
+    $job->await;
+    ok(1, "worker exit");
+    sleep 1;
 }
 
 done_testing;
